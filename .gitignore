@@ -48,3 +48,4 @@ nbdist/
 .DS_Store
 Thumbs.db
 desktop.ini
+.project
