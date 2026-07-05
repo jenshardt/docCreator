@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:8080
+
+### PDF VT 1
+GET {{baseUrl}}/api/pdf/standard/pdf-vt-1
+Accept: application/pdf
+
+### PDF VT 2
+GET {{baseUrl}}/api/pdf/standard/pdf-vt-2
+Accept: application/pdf

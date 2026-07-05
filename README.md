@@ -12,10 +12,6 @@ Current focus:
 - Run validation checks for every generated file.
 - Run veraPDF CLI checks for PDF/A and PDF/UA profiles.
 
-Removed legacy parts:
-- Old XML/XSL-FO creator endpoint and service.
-- Old PDF-to-HTML converter endpoint and service.
-- Obsolete custom config class for file-path based conversion.
 
 ## REST endpoints
 
@@ -112,3 +108,47 @@ Windows example with absolute path:
 ## Run
 
 - mvn spring-boot:run
+
+## API request examples in VS Code (REST Client)
+
+If you use the VS Code extension `REST Client` (`humao.rest-client`), request examples are included in the project under `http/`.
+
+Structured request files:
+- `http/pdf-versions.http`
+- `http/pdf-a.http`
+- `http/pdf-x.http`
+- `http/pdf-ua.http`
+- `http/pdf-vt.http`
+
+Optional root entry file:
+- `requests.http` (contains a smoke test and links to the structured files)
+
+How to use:
+1. Start the application (`mvn spring-boot:run`).
+2. Open one of the `.http` files from `http/`.
+3. Click `Send Request` above any request block.
+4. Inspect status, headers and body in the REST Client response panel.
+
+Notes:
+- All requests use `@baseUrl = http://localhost:8080`.
+- Successful responses return `application/pdf` and validation metadata in headers (`X-Pdf-Target`, `X-Validation-Result`, `X-Validation-Summary`, `X-Validation-Details`).
+
+## Download PDFs as files (PowerShell)
+
+To download generated PDFs directly as files, use:
+- `scripts/download-pdfs.ps1`
+
+Examples:
+1. Download all endpoints to `downloads/`:
+	- `powershell -ExecutionPolicy Bypass -File .\scripts\download-pdfs.ps1`
+2. Download only selected targets:
+	- `powershell -ExecutionPolicy Bypass -File .\scripts\download-pdfs.ps1 -Only pdf-ua-1,pdf-a-2b`
+3. Use custom API URL and output folder:
+	- `powershell -ExecutionPolicy Bypass -File .\scripts\download-pdfs.ps1 -BaseUrl http://localhost:8080 -OutputDir out-pdfs`
+
+Target names for `-Only` correspond to file names, for example:
+- `pdf-version-1.7`
+- `pdf-a-2b`
+- `pdf-x-4`
+- `pdf-ua-1`
+- `pdf-vt-1`

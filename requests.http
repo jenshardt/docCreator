@@ -1,0 +1,13 @@
+### This file is kept as entry point.
+### Use the structured request files in ./http/:
+### - http/pdf-versions.http
+### - http/pdf-a.http
+### - http/pdf-x.http
+### - http/pdf-ua.http
+### - http/pdf-vt.http
+
+@baseUrl = http://localhost:8080
+
+### Smoke Test (PDF Version 1.7)
+GET {{baseUrl}}/api/pdf/version/1.7
+Accept: application/pdf

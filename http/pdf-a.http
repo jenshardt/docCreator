@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:8080
+
+### PDF A 1a
+GET {{baseUrl}}/api/pdf/standard/pdf-a-1a
+Accept: application/pdf
+
+### PDF A 1b
+GET {{baseUrl}}/api/pdf/standard/pdf-a-1b
+Accept: application/pdf
+
+### PDF A 2a
+GET {{baseUrl}}/api/pdf/standard/pdf-a-2a
+Accept: application/pdf
+
+### PDF A 2b
+GET {{baseUrl}}/api/pdf/standard/pdf-a-2b
+Accept: application/pdf
+
+### PDF A 2u
+GET {{baseUrl}}/api/pdf/standard/pdf-a-2u
+Accept: application/pdf
+
+### PDF A 3a
+GET {{baseUrl}}/api/pdf/standard/pdf-a-3a
+Accept: application/pdf
+
+### PDF A 3b
+GET {{baseUrl}}/api/pdf/standard/pdf-a-3b
+Accept: application/pdf
+
+### PDF A 3u
+GET {{baseUrl}}/api/pdf/standard/pdf-a-3u
+Accept: application/pdf
+
+### PDF A 4
+GET {{baseUrl}}/api/pdf/standard/pdf-a-4
+Accept: application/pdf
+
+### PDF A 4e
+GET {{baseUrl}}/api/pdf/standard/pdf-a-4e
+Accept: application/pdf
+
+### PDF A 4f
+GET {{baseUrl}}/api/pdf/standard/pdf-a-4f
+Accept: application/pdf
