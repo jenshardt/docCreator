@@ -48,5 +48,3 @@ nbdist/
 .DS_Store
 Thumbs.db
 desktop.ini
-.project
-.settings/org.eclipse.core.resources.prefs
