@@ -11,6 +11,55 @@ Current focus:
 - Generate PDF examples for PDF/A, PDF/X, PDF/UA and PDF/VT profiles.
 - Run validation checks for every generated file.
 - Run veraPDF CLI checks for PDF/A and PDF/UA profiles.
+- Embed a variety of font types (TrueType and Type 1/PostScript) and generated demo images in
+  every profile's font/image demo page.
+
+Done so far:
+- Endpoints and content generation for all PDF version and PDF/A/X/UA/VT targets listed below.
+- Font demo page with TrueType fonts (Latin/Cyrillic/Greek via Liberation + Noto Sans, CJK via a
+  reduced Noto Sans SC subset) and a genuine Type 1 (PostScript) font (URW Nimbus Sans), always
+  embedded in full since PDFBox cannot subset simple Type 1 fonts.
+- Runtime-generated demo images (no bundled image files, so no image licensing concerns).
+- General validation checks (header version, readability, marker text, profile-family rules) plus
+  veraPDF-backed PDF/A and PDF/UA compliance checks.
+- 49 unit tests covering font embedding, content builders (one parameterized case per `PdfTarget`),
+  and image generation — all currently passing (`mvn test`).
+
+### Open issues / known limitations
+
+- **PDF/A-1 compliance of the Type 1 font is not empirically verified.** veraPDF is not installed
+  in the current development environment, so the real compliance checker was never actually run
+  against the Type 1 demo font. Type 1 is spec-wise one of the oldest/most universally supported
+  PDF font formats (unlike OpenType/CFF, which PDFBox 2.0.31/3.0.3 cannot embed as a new Type0 font
+  at all — confirmed by source inspection), but this remains an assumption until veraPDF is
+  actually run. **Action needed:** install veraPDF locally (see Configuration below) and re-check
+  `/api/pdf/standard/pdf-a-1a` (and the other PDF/A targets).
+- **`checkHeader()` locale bug** in `PdfValidationService`: `String.format("%.1f", ...)` uses the
+  JVM default locale. On a machine with a comma-decimal locale (e.g. German), it produces
+  `"%PDF-1,7"` instead of the spec-correct `"%PDF-1.7"`, so the `HEADER_VERSION` check always fails
+  there even though the generated PDF is correct. Fix: use `String.format(Locale.US, "%.1f", ...)`.
+- **`checkContainsTargetText()` is byte-scan based**: it searches for marker text directly in the
+  raw (possibly FlateDecode-compressed) PDF bytes instead of the decoded content stream, so it can
+  spuriously fail depending on whether/how content streams end up compressed.
+- **`X-Validation-Details` header can go missing from responses.** When the underlying check
+  message contains a character that isn't ISO-8859-1-encodable (e.g. from truncated veraPDF XML
+  output), Tomcat throws `UnmappableCharacterException` while writing response headers, and the
+  header is silently dropped from the actual HTTP response. Not yet fixed; validation details
+  should probably be sanitized before being placed in a header, or moved into the response body.
+
+None of the three validation-check issues above were introduced by the font work — they were
+discovered as a side effect of end-to-end testing and are pre-existing gaps in
+`PdfValidationService`/veraPDF wiring, not in font handling itself.
+
+### Next steps
+
+- Install veraPDF locally and confirm real PDF/A-1a/1b compliance for the Type 1 font; adjust the
+  font demo (e.g. skip Type 1 for specific targets) if a genuine rule violation turns up.
+- Fix the `HEADER_VERSION` locale bug (`Locale.US`).
+- Make `checkContainsTargetText()` decode content streams instead of scanning raw bytes.
+- Sanitize/rework `X-Validation-Details` so non-Latin1 content can't silently drop the header.
+- Continue adding more embedded element variety (further font styles, additional image types)
+  per the phased plan, with a review checkpoint after each phase.
 
 
 ## REST endpoints
@@ -104,6 +153,27 @@ Windows example with absolute path:
 - de.hardt.docCreator.service.PdfValidationService
 - de.hardt.docCreator.service.VeraPdfValidationService
 - de.hardt.docCreator.model.PdfTarget
+
+## Fonts and licenses
+
+All fonts are bundled as classpath resources under `src/main/resources/fonts/` and embedded via
+`de.hardt.docCreator.service.font.PdfFontService` / `FontAsset`. TrueType fonts are embedded as
+subsets; the Type 1 font is always embedded in full (PDFBox 2.0.31 has no subsetting support for
+simple, non-CID Type 1 fonts).
+
+| Font | Format | Coverage | License | Notes |
+|---|---|---|---|---|
+| Liberation Sans/Serif/Mono (Regular/Bold/Italic/BoldItalic) | TrueType | Latin | [SIL Open Font License 1.1](https://scripts.sil.org/OFL) (`fonts/liberation/OFL.txt`) | Metric-compatible with Arial/Times New Roman/Courier New |
+| Noto Sans (Regular) | TrueType | Latin, Cyrillic, Greek | SIL OFL 1.1 (`fonts/noto/OFL-NotoSans.txt`) | Single file covering three scripts for the multi-script demo |
+| Noto Sans SC (reduced subset) | TrueType | CJK (demo glyphs only) | SIL OFL 1.1 (`fonts/noto/OFL-NotoSansSC.txt`) | Pre-subsetted to a small glyph set to keep the repository size down |
+| URW Nimbus Sans (Regular) | Type 1 (PostScript) | Latin | AGPL-3.0, with an explicit font-embedding exception (`fonts/urw-nimbus/LICENSE.txt`, full license text in `fonts/urw-nimbus/COPYING.txt`) | Metric-compatible clone of Helvetica; genuine Adobe Type 1 font program, sourced as raw/PFA-style Type 1 data and converted to PFB at runtime by `Type1PfaToPfbConverter` (PDFBox's embedder only accepts PFB) |
+
+Demo images used in the profile pages are generated at runtime (not bundled files), so they carry
+no separate licensing concerns.
+
+The font-embedding exception in the URW Nimbus Sans license explicitly permits including the font
+in generated PDF/PostScript documents regardless of the license of the document itself, which is
+why it is safe to use here despite the otherwise copyleft AGPL-3.0 license.
 
 ## Run
 

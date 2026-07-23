@@ -85,6 +85,21 @@ public enum PdfTarget {
         return 1.7f;
     }
 
+    /**
+     * Whether embedded file attachments are permitted for this target.
+     * Per the agreed scope: PDF/A-3* and PDF/A-4* allow attachments (that is
+     * what PDF/A-3 introduced them for), plain PDF versions from 1.4 onward
+     * support the /EmbeddedFiles name tree, but PDF/A-1/2, PDF/X, PDF/UA and
+     * PDF/VT targets do not get attachments in this application.
+     */
+    public boolean supportsAttachments() {
+        return switch (this) {
+            case PDF_A_3A, PDF_A_3B, PDF_A_3U, PDF_A_4, PDF_A_4E, PDF_A_4F -> true;
+            case V_1_4, V_1_5, V_1_6, V_1_7, V_2_0 -> true;
+            default -> false;
+        };
+    }
+
     public static Optional<PdfTarget> bySlug(String slug) {
         return Optional.ofNullable(BY_SLUG.get(slug));
     }
